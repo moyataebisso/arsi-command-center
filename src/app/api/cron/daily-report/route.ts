@@ -7,8 +7,13 @@ import { sendDiscordMessage } from '@/lib/notifications/discord'
 import { format } from 'date-fns'
 
 export async function GET(request: NextRequest) {
-  const auth = request.headers.get('authorization')
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  const authHeader = request.headers.get('authorization')
+  const urlSecret = request.nextUrl.searchParams.get('secret')
+  const isValid =
+    authHeader === `Bearer ${process.env.CRON_SECRET}` ||
+    urlSecret === process.env.CRON_SECRET
+
+  if (!isValid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
