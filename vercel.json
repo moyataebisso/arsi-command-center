@@ -1,0 +1,8 @@
+{
+  "crons": [
+    { "path": "/api/cron/ssl-check", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/daily-report", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/security-scan", "schedule": "0 2 * * 0" },
+    { "path": "/api/cron/performance-audit", "schedule": "0 3 * * 1" }
+  ]
+}
