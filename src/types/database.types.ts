@@ -11,6 +11,8 @@ export interface Site {
   hosting_provider: HostingProvider
   supabase_project_url?: string
   vercel_project_id?: string
+  vercel_team_id?: string
+  supabase_project_ref?: string
   github_repo?: string
   ssl_expiry?: string
   domain_expiry?: string
@@ -125,4 +127,27 @@ export interface Integration {
   credentials_encrypted: string | null
   last_synced_at: string | null
   created_at: string
+}
+
+export interface Deployment {
+  id: string
+  site_id: string
+  deployment_id: string | null
+  state: 'READY' | 'ERROR' | 'BUILDING' | 'CANCELED' | 'QUEUED'
+  url: string | null
+  commit_message: string | null
+  commit_sha: string | null
+  branch: string | null
+  created_at: string
+  deployed_at: string | null
+}
+
+export interface SupabaseHealth {
+  id: string
+  site_id: string
+  db_size_mb: number | null
+  active_connections: number | null
+  storage_used_mb: number | null
+  auth_users_count: number | null
+  checked_at: string
 }

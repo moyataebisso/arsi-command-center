@@ -21,9 +21,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params
     const body = await request.json()
+    const allowedFields = [
+      'name', 'url', 'hosting_provider', 'github_repo', 'status',
+      'vercel_project_id', 'vercel_team_id', 'supabase_project_ref',
+      'supabase_project_url', 'ssl_expiry', 'domain_expiry',
+    ]
+    const filtered: Record<string, unknown> = {}
+    for (const key of allowedFields) {
+      if (key in body) filtered[key] = body[key]
+    }
     const { data, error } = await supabaseAdmin
       .from('sites')
-      .update(body)
+      .update(filtered)
       .eq('id', id)
       .select()
       .single()

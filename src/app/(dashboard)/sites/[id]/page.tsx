@@ -12,7 +12,7 @@ import { SecurityPanel } from '@/components/dashboard/SecurityPanel'
 import { PerformancePanel } from '@/components/dashboard/PerformancePanel'
 import { SiteDetailTabs } from './tabs'
 import { format, subDays, startOfDay } from 'date-fns'
-import type { Site, UptimeCheck, SSLCheck, SecurityScan, PerformanceScore, Alert } from '@/types/database.types'
+import type { Site, UptimeCheck, SSLCheck, SecurityScan, PerformanceScore, Alert, Deployment, SupabaseHealth } from '@/types/database.types'
 
 export default async function SiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -78,6 +78,23 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
     .limit(1)
     .single()
 
+  // Deployments
+  const { data: deployments } = await supabase
+    .from('deployments')
+    .select('*')
+    .eq('site_id', id)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  // Supabase health (latest)
+  const { data: supabaseHealth } = await supabase
+    .from('supabase_health')
+    .select('*')
+    .eq('site_id', id)
+    .order('checked_at', { ascending: false })
+    .limit(1)
+    .single()
+
   // Alerts for this site
   const { data: alerts } = await supabase
     .from('alerts')
@@ -104,6 +121,9 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
         securityScan={(securityScan as SecurityScan) ?? null}
         perfScore={(perfScore as PerformanceScore) ?? null}
         alerts={(alerts ?? []) as Alert[]}
+        deployments={(deployments ?? []) as Deployment[]}
+        supabaseHealth={(supabaseHealth as SupabaseHealth) ?? null}
+        site={site as Site}
         siteId={id}
       />
     </div>

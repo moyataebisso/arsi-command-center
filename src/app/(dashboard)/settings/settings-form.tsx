@@ -9,7 +9,7 @@ import { Dialog, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { StatusDot } from '@/components/shared/StatusDot'
-import { Plus, Trash2, Send } from 'lucide-react'
+import { Plus, Trash2, Send, Save } from 'lucide-react'
 import type { NotificationSettings, Site, HostingProvider } from '@/types/database.types'
 
 export function SettingsForm({
@@ -31,6 +31,22 @@ export function SettingsForm({
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
+
+  // Integration fields per site
+  const [integrations, setIntegrations] = useState<Record<string, {
+    vercel_project_id: string
+    vercel_team_id: string
+    supabase_project_ref: string
+  }>>(
+    Object.fromEntries(
+      sites.map((s) => [s.id, {
+        vercel_project_id: s.vercel_project_id ?? '',
+        vercel_team_id: s.vercel_team_id ?? '',
+        supabase_project_ref: s.supabase_project_ref ?? '',
+      }])
+    )
+  )
+  const [savingIntegration, setSavingIntegration] = useState<string | null>(null)
 
   // Add site modal
   const [showAddSite, setShowAddSite] = useState(false)
@@ -189,6 +205,84 @@ export function SettingsForm({
               ))}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      {/* Integrations */}
+      <Card>
+        <CardHeader><CardTitle>Integrations</CardTitle></CardHeader>
+        <CardContent className="space-y-6">
+          {sites.map((site) => (
+            <div key={site.id} className="rounded-lg border border-slate-700 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-100">{site.name}</span>
+                <Badge>{site.hosting_provider}</Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm text-slate-400">Vercel Project ID</label>
+                  <Input
+                    value={integrations[site.id]?.vercel_project_id ?? ''}
+                    onChange={(e) => setIntegrations({
+                      ...integrations,
+                      [site.id]: { ...integrations[site.id], vercel_project_id: e.target.value },
+                    })}
+                    placeholder="prj_..."
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-400">Team ID (optional)</label>
+                  <Input
+                    value={integrations[site.id]?.vercel_team_id ?? ''}
+                    onChange={(e) => setIntegrations({
+                      ...integrations,
+                      [site.id]: { ...integrations[site.id], vercel_team_id: e.target.value },
+                    })}
+                    placeholder="team_..."
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-400">Project Ref</label>
+                  <Input
+                    value={integrations[site.id]?.supabase_project_ref ?? ''}
+                    onChange={(e) => setIntegrations({
+                      ...integrations,
+                      [site.id]: { ...integrations[site.id], supabase_project_ref: e.target.value },
+                    })}
+                    placeholder="abcdefghijklmnop"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  disabled={savingIntegration === site.id}
+                  onClick={async () => {
+                    setSavingIntegration(site.id)
+                    try {
+                      await fetch(`/api/sites/${site.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          vercel_project_id: integrations[site.id].vercel_project_id || null,
+                          vercel_team_id: integrations[site.id].vercel_team_id || null,
+                          supabase_project_ref: integrations[site.id].supabase_project_ref || null,
+                        }),
+                      })
+                    } finally {
+                      setSavingIntegration(null)
+                    }
+                  }}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {savingIntegration === site.id ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          ))}
+          {sites.length === 0 && (
+            <p className="text-slate-400">No sites configured yet. Add a site above first.</p>
+          )}
         </CardContent>
       </Card>
 
