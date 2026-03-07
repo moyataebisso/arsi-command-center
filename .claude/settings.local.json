@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Read(//c/Users/ebiss/Projects/**)",
+      "Bash(mkdir -p arsi-platform/apps/dashboard arsi-platform/apps/starter-app arsi-platform/packages/shared-ui/components arsi-platform/packages/db arsi-platform/packages/email arsi-platform/packages/config)",
+      "Bash(powershell:*)",
+      "Bash(npm:*)"
     ]
   }
 }
