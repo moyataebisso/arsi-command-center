@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { scanSecurityHeaders } from '@/lib/monitoring/security'
 
-export async function POST(request: NextRequest) {
+async function handleRescan(request: NextRequest) {
   const urlSecret = request.nextUrl.searchParams.get('secret')
   if (urlSecret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const body = await request.json().catch(() => ({}))
+    const body = request.method === 'POST'
+      ? await request.json().catch(() => ({}))
+      : {}
     const siteId = (body as { siteId?: string }).siteId
+      || request.nextUrl.searchParams.get('siteId')
 
     let query = supabaseAdmin.from('sites').select('*')
     if (siteId) {
@@ -25,6 +28,7 @@ export async function POST(request: NextRequest) {
     const results = await Promise.allSettled(
       sites.map(async (site) => {
         const result = await scanSecurityHeaders(site.url)
+        const scannedAt = new Date().toISOString()
 
         await supabaseAdmin.from('security_scans').insert({
           site_id: site.id,
@@ -32,9 +36,15 @@ export async function POST(request: NextRequest) {
           findings_json: result.findings,
           severity: result.severity,
           score: result.score,
+          scanned_at: scannedAt,
         })
 
-        return { site: site.name, score: result.score, findings: result.findings }
+        return {
+          site: site.name,
+          score: result.score,
+          headers: result.findings,
+          scannedAt,
+        }
       })
     )
 
@@ -46,4 +56,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
   }
+}
+
+export async function GET(request: NextRequest) {
+  return handleRescan(request)
+}
+
+export async function POST(request: NextRequest) {
+  return handleRescan(request)
 }

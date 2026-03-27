@@ -158,7 +158,7 @@ export function SiteDetailTabs({
       </TabsContent>
 
       <TabsContent value="security" className="mt-4">
-        <SecurityPanel scan={securityScan} />
+        <SecurityPanel scan={securityScan} siteId={siteId} />
       </TabsContent>
 
       <TabsContent value="alerts" className="mt-4">

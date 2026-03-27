@@ -22,12 +22,14 @@ export async function GET(request: NextRequest) {
       sites.map(async (site) => {
         const result = await scanSecurityHeaders(site.url)
 
+        const scannedAt = new Date().toISOString()
         await supabaseAdmin.from('security_scans').insert({
           site_id: site.id,
           scan_type: 'headers',
           findings_json: result.findings,
           severity: result.severity,
           score: result.score,
+          scanned_at: scannedAt,
         })
 
         if (result.score < 50) {

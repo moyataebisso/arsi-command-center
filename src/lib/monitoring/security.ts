@@ -10,11 +10,12 @@ const SECURITY_HEADERS = [
 ]
 
 export async function scanSecurityHeaders(url: string): Promise<SecurityResult> {
-  const response = await fetch(url, { method: 'HEAD' })
+  // Use GET — many servers omit security headers on HEAD requests
+  const response = await fetch(url, { redirect: 'follow' })
   const headers = response.headers
   let score = 0
   const findings: SecurityHeaderFinding[] = SECURITY_HEADERS.map((h) => {
-    const present = headers.has(h.name)
+    const present = !!headers.get(h.name)
     if (present) score += h.weight
     return {
       header: h.name,
