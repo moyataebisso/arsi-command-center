@@ -1,12 +1,12 @@
 import type { SecurityResult, SecurityHeaderFinding } from '@/types/monitoring'
 
 const SECURITY_HEADERS = [
-  { name: 'strict-transport-security', weight: 20, label: 'HSTS' },
-  { name: 'content-security-policy', weight: 25, label: 'CSP' },
   { name: 'x-frame-options', weight: 15, label: 'X-Frame-Options' },
   { name: 'x-content-type-options', weight: 15, label: 'X-Content-Type-Options' },
   { name: 'referrer-policy', weight: 15, label: 'Referrer-Policy' },
-  { name: 'permissions-policy', weight: 10, label: 'Permissions-Policy' },
+  { name: 'permissions-policy', weight: 15, label: 'Permissions-Policy' },
+  { name: 'strict-transport-security', weight: 15, label: 'HSTS' },
+  { name: 'content-security-policy', weight: 25, label: 'CSP' },
 ]
 
 export async function scanSecurityHeaders(url: string): Promise<SecurityResult> {
