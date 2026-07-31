@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, report: { totalSites: report.totalSites, incidents: report.incidentCount } })
   } catch (error) {
+    console.error('[cron/daily-report] failed', error)
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
   }
 }

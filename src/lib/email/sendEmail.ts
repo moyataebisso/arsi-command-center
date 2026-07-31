@@ -11,13 +11,21 @@ export async function sendEmail(params: {
   subject: string
   html: string
 }) {
-  const from = process.env.RESEND_FROM_EMAIL ?? 'alerts@arsitechgroup.com'
+  const from = process.env.RESEND_FROM_EMAIL ?? 'noreply@arsitechgroup.com'
   const { data, error } = await getResend().emails.send({
     from: `Arsi Command Center <${from}>`,
     to: params.to,
     subject: params.subject,
     html: params.html,
   })
-  if (error) throw new Error(error.message)
+  if (error) {
+    console.error('[sendEmail] Resend rejected send', {
+      from,
+      to: params.to,
+      subject: params.subject,
+      error,
+    })
+    throw new Error(error.message)
+  }
   return data
 }
